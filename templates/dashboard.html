@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parking System - Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .header {
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+        .nav {
+            margin-top: 15px;
+        }
+        .nav a {
+            display: inline-block;
+            padding: 8px 16px;
+            margin-right: 10px;
+            background: #333;
+            color: #fff;
+            text-decoration: none;
+            border: 1px solid #333;
+        }
+        .nav a:hover {
+            background: #555;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .slot-card {
+            background: #fff;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #ddd;
+        }
+        .slot-card.available {
+            border-color: #333;
+        }
+        .slot-card.occupied {
+            background: #e0e0e0;
+            border-color: #999;
+        }
+        .slot-number {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .slot-status {
+            font-size: 14px;
+            padding: 5px 10px;
+            background: #333;
+            color: #fff;
+            display: inline-block;
+        }
+        .slot-status.occupied {
+            background: #999;
+        }
+        .stats {
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+        .stats h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .stats-row {
+            display: flex;
+            gap: 20px;
+        }
+        .stat-item {
+            flex: 1;
+            padding: 15px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Parking Management System</h1>
+        <div class="nav">
+            <a href="/">Home</a>
+            {% if user.is_authenticated %}
+                <a href="/book/">Book Slot</a>
+                <a href="/my-bookings/">My Bookings</a>
+                {% if user.is_staff %}
+                <a href="/admin-portal/">Admin Portal</a>
+                {% endif %}
+                <a href="/logout/">Logout ({{ user.username }})</a>
+            {% else %}
+                <a href="/login/">Login</a>
+                <a href="/register/">Register</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="stats">
+            <h2>Parking Overview</h2>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-label">Total Slots</div>
+                    <div class="stat-value">{{ slots|length }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Available</div>
+                    <div class="stat-value">{{ available_count }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Occupied</div>
+                    <div class="stat-value">{{ occupied_count }}</div>
+                </div>
+            </div>
+        </div>
+
+        <h2 style="margin-bottom: 15px; color: #333;">All Parking Slots</h2>
+        <div class="slots-grid">
+            {% for slot in slots %}
+            <div class="slot-card {% if slot.is_available %}available{% else %}occupied{% endif %}">
+                <div class="slot-number">{{ slot.slot_number }}</div>
+                <span class="slot-status {% if not slot.is_available %}occupied{% endif %}">
+                    {% if slot.is_available %}Available{% else %}Occupied{% endif %}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

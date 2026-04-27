@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Parking Slot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .header {
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+        .nav {
+            margin-top: 15px;
+        }
+        .nav a {
+            display: inline-block;
+            padding: 8px 16px;
+            margin-right: 10px;
+            background: #333;
+            color: #fff;
+            text-decoration: none;
+            border: 1px solid #333;
+        }
+        .nav a:hover {
+            background: #555;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .section {
+            background: #fff;
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+        .section h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+        .form-group select, .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+        .btn {
+            padding: 12px 24px;
+            background: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background: #555;
+        }
+        .btn-secondary {
+            background: #666;
+            margin-left: 10px;
+        }
+        .btn-secondary:hover {
+            background: #888;
+        }
+        .message {
+            padding: 15px;
+            margin-bottom: 20px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            color: #333;
+        }
+        .vehicle-form {
+            background: #f9f9f9;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+        }
+        .vehicle-form h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Parking Management System</h1>
+        <div class="nav">
+            <a href="/">Home</a>
+            <a href="/book/">Book Slot</a>
+            <a href="/my-bookings/">My Bookings</a>
+            {% if user.is_authenticated %}
+                <a href="/logout/">Logout ({{ user.username }})</a>
+            {% else %}
+                <a href="/login/">Login</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="section">
+            <h2>Book a Parking Slot</h2>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="message">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            {% if vehicles %}
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Select Your Vehicle:</label>
+                        <select name="vehicle" required>
+                            <option value="">-- Choose a vehicle --</option>
+                            {% for v in vehicles %}
+                            <option value="{{ v.id }}">{{ v.vehicle_number }} ({{ v.vehicle_type }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn">Book Slot</button>
+                </form>
+
+                <div class="vehicle-form">
+                    <h3>Add New Vehicle</h3>
+                    <form method="POST" action="/add-vehicle/">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label>Vehicle Number:</label>
+                            <input type="text" name="vehicle_number" placeholder="e.g., ABC-1234" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Vehicle Type:</label>
+                            <select name="vehicle_type" required>
+                                <option value="">-- Select type --</option>
+                                <option value="Car">Car</option>
+                                <option value="Bike">Bike</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-secondary">Add Vehicle</button>
+                    </form>
+                </div>
+            {% else %}
+                <div class="message">
+                    You don't have any vehicles registered. Please add a vehicle first.
+                </div>
+                <form method="POST" action="/add-vehicle/">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Vehicle Number:</label>
+                        <input type="text" name="vehicle_number" placeholder="e.g., ABC-1234" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Vehicle Type:</label>
+                        <select name="vehicle_type" required>
+                            <option value="">-- Select type --</option>
+                            <option value="Car">Car</option>
+                            <option value="Bike">Bike</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn">Add Vehicle</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

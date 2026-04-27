@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Slots</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .header {
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+        .nav {
+            margin-top: 15px;
+        }
+        .nav a {
+            display: inline-block;
+            padding: 8px 16px;
+            margin-right: 10px;
+            background: #333;
+            color: #fff;
+            text-decoration: none;
+            border: 1px solid #333;
+        }
+        .nav a:hover {
+            background: #555;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section {
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+        .section h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #f9f9f9;
+            font-weight: bold;
+            color: #333;
+        }
+        .btn {
+            padding: 6px 12px;
+            background: #333;
+            color: #fff;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #555;
+        }
+        .btn-danger {
+            background: #666;
+        }
+        .btn-danger:hover {
+            background: #888;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+        .status-available {
+            color: #333;
+            font-weight: bold;
+        }
+        .status-occupied {
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Manage Parking Slots</h1>
+        <div class="nav">
+            <a href="/">Home</a>
+            <a href="/admin-portal/">Dashboard</a>
+            <a href="/admin-portal/slots/">Manage Slots</a>
+            <a href="/admin-portal/bookings/">All Bookings</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="section">
+            <h2>Add New Slot</h2>
+            <form method="POST" action="/admin-portal/slots/add/">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Slot Number:</label>
+                    <input type="text" name="slot_number" required>
+                </div>
+                <button type="submit" class="btn">Add Slot</button>
+            </form>
+        </div>
+
+        <div class="section">
+            <h2>All Parking Slots</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Slot Number</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for slot in slots %}
+                    <tr>
+                        <td>{{ slot.slot_number }}</td>
+                        <td class="{% if slot.is_available %}status-available{% else %}status-occupied{% endif %}">
+                            {% if slot.is_available %}Available{% else %}Occupied{% endif %}
+                        </td>
+                        <td>
+                            <form method="POST" action="/admin-portal/slots/delete/{{ slot.id }}/" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this slot?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

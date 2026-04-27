@@ -1,0 +1,182 @@
+from django.shortcuts import render, redirect
+from .models import ParkingSlot, Booking, Vehicle
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from datetime import timedelta
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.contrib import messages
+
+def dashboard(request):
+    slots = ParkingSlot.objects.all()
+    available_count = slots.filter(is_available=True).count()
+    occupied_count = slots.filter(is_available=False).count()
+    return render(request, 'dashboard.html', {
+        'slots': slots,
+        'available_count': available_count,
+        'occupied_count': occupied_count
+    })
+
+@login_required(login_url='/login/')
+def book_slot(request):
+    if request.method == 'POST':
+        vehicle_id = request.POST.get('vehicle')
+        if not vehicle_id:
+            messages.error(request, 'Please select a vehicle')
+            return redirect('book_slot')
+            
+        vehicle = Vehicle.objects.get(id=vehicle_id)
+
+        slot = ParkingSlot.objects.filter(is_available=True).first()
+        if slot:
+            slot.is_available = False
+            slot.save()
+
+            booking = Booking.objects.create(
+                user=request.user,
+                vehicle=vehicle,
+                slot=slot,
+                expiry_time=timezone.now() + timedelta(minutes=30)
+            )
+            messages.success(request, f'Slot {slot.slot_number} booked successfully!')
+            return redirect('my_bookings')
+        else:
+            messages.error(request, 'No available slots at the moment')
+
+    vehicles = Vehicle.objects.filter(user=request.user)
+    return render(request, 'book.html', {'vehicles': vehicles})
+
+@login_required(login_url='/login/')
+def add_vehicle(request):
+    if request.method == 'POST':
+        vehicle_number = request.POST.get('vehicle_number')
+        vehicle_type = request.POST.get('vehicle_type')
+        
+        Vehicle.objects.create(
+            user=request.user,
+            vehicle_number=vehicle_number,
+            vehicle_type=vehicle_type
+        )
+        messages.success(request, 'Vehicle added successfully!')
+    return redirect('book_slot')
+
+@login_required(login_url='/login/')
+def my_bookings(request):
+    bookings = Booking.objects.filter(user=request.user).order_by('-booking_time')
+    return render(request, 'My_bookings.html', {'bookings': bookings})
+
+@login_required(login_url='/login/')
+def cancel_booking(request, booking_id):
+    if request.method == 'POST':
+        booking = Booking.objects.get(id=booking_id, user=request.user)
+        booking.status = 'Cancelled'
+        booking.slot.is_available = True
+        booking.slot.save()
+        booking.save()
+        messages.success(request, 'Booking cancelled successfully!')
+    return redirect('my_bookings')
+
+def user_login(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+        
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            messages.success(request, f'Welcome back, {username}!')
+            return redirect('dashboard')
+        else:
+            messages.error(request, 'Invalid username or password')
+    
+    return render(request, 'login.html')
+
+def user_register(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+        
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        
+        if password1 != password2:
+            messages.error(request, 'Passwords do not match')
+            return render(request, 'register.html')
+        
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'Username already exists')
+            return render(request, 'register.html')
+        
+        user = User.objects.create_user(username=username, password=password1)
+        login(request, user)
+        messages.success(request, 'Registration successful! Welcome!')
+        return redirect('dashboard')
+    
+    return render(request, 'register.html')
+
+def user_logout(request):
+    logout(request)
+    messages.success(request, 'Logged out successfully!')
+    return redirect('dashboard')
+
+
+# Admin Portal Views
+@staff_member_required
+def admin_dashboard(request):
+    total_slots = ParkingSlot.objects.count()
+    available_slots = ParkingSlot.objects.filter(is_available=True).count()
+    occupied_slots = ParkingSlot.objects.filter(is_available=False).count()
+    total_bookings = Booking.objects.count()
+    active_bookings = Booking.objects.filter(status='Active').count()
+    recent_bookings = Booking.objects.all().order_by('-booking_time')[:10]
+    
+    return render(request, 'admin_dashboard.html', {
+        'total_slots': total_slots,
+        'available_slots': available_slots,
+        'occupied_slots': occupied_slots,
+        'total_bookings': total_bookings,
+        'active_bookings': active_bookings,
+        'recent_bookings': recent_bookings,
+    })
+
+@staff_member_required
+def manage_slots(request):
+    slots = ParkingSlot.objects.all().order_by('slot_number')
+    return render(request, 'manage_slots.html', {'slots': slots})
+
+@staff_member_required
+def add_slot(request):
+    if request.method == 'POST':
+        slot_number = request.POST.get('slot_number')
+        ParkingSlot.objects.create(slot_number=slot_number)
+        messages.success(request, f'Slot {slot_number} added successfully!')
+    return redirect('manage_slots')
+
+@staff_member_required
+def delete_slot(request, slot_id):
+    if request.method == 'POST':
+        slot = ParkingSlot.objects.get(id=slot_id)
+        slot.delete()
+        messages.success(request, 'Slot deleted successfully!')
+    return redirect('manage_slots')
+
+@staff_member_required
+def all_bookings(request):
+    bookings = Booking.objects.all().order_by('-booking_time')
+    return render(request, 'all_bookings.html', {'bookings': bookings})
+
+@staff_member_required
+def admin_cancel_booking(request, booking_id):
+    if request.method == 'POST':
+        booking = Booking.objects.get(id=booking_id)
+        booking.status = 'Cancelled'
+        booking.slot.is_available = True
+        booking.slot.save()
+        booking.save()
+        messages.success(request, 'Booking cancelled successfully!')
+    return redirect('all_bookings')

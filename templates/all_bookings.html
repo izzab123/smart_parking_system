@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Bookings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .header {
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+        .nav {
+            margin-top: 15px;
+        }
+        .nav a {
+            display: inline-block;
+            padding: 8px 16px;
+            margin-right: 10px;
+            background: #333;
+            color: #fff;
+            text-decoration: none;
+            border: 1px solid #333;
+        }
+        .nav a:hover {
+            background: #555;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section {
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+        .section h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #f9f9f9;
+            font-weight: bold;
+            color: #333;
+        }
+        .btn {
+            padding: 6px 12px;
+            background: #333;
+            color: #fff;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #555;
+        }
+        .status-active {
+            color: #333;
+            font-weight: bold;
+        }
+        .status-cancelled {
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>All Bookings</h1>
+        <div class="nav">
+            <a href="/">Home</a>
+            <a href="/admin-portal/">Dashboard</a>
+            <a href="/admin-portal/slots/">Manage Slots</a>
+            <a href="/admin-portal/bookings/">All Bookings</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="section">
+            <h2>Booking History</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User</th>
+                        <th>Vehicle</th>
+                        <th>Slot</th>
+                        <th>Booking Time</th>
+                        <th>Expiry Time</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    <tr>
+                        <td>{{ booking.id }}</td>
+                        <td>{{ booking.user.username }}</td>
+                        <td>{{ booking.vehicle.vehicle_number }}</td>
+                        <td>{{ booking.slot.slot_number }}</td>
+                        <td>{{ booking.booking_time|date:"Y-m-d H:i" }}</td>
+                        <td>{{ booking.expiry_time|date:"Y-m-d H:i" }}</td>
+                        <td class="{% if booking.status == 'Active' %}status-active{% else %}status-cancelled{% endif %}">
+                            {{ booking.status }}
+                        </td>
+                        <td>
+                            {% if booking.status == 'Active' %}
+                            <form method="POST" action="/admin-portal/bookings/cancel/{{ booking.id }}/" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn">Cancel</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
