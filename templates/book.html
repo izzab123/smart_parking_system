@@ -106,6 +106,76 @@
             margin-bottom: 15px;
             color: #333;
         }
+        .vehicle-option {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            background: #fff;
+        }
+        .vehicle-option input[type="radio"] {
+            margin-right: 15px;
+            width: auto;
+        }
+        .vehicle-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+            margin-right: 15px;
+        }
+        .vehicle-image-placeholder {
+            width: 60px;
+            height: 60px;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ddd;
+            margin-right: 15px;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+        .vehicle-info {
+            flex: 1;
+        }
+        .vehicle-info strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .vehicle-info span {
+            color: #666;
+            font-size: 14px;
+        }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        .file-input-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #666;
+            color: #fff;
+            cursor: pointer;
+            border: 1px solid #666;
+        }
+        .file-input-label:hover {
+            background: #888;
+        }
+        .file-name {
+            display: inline-block;
+            margin-left: 10px;
+            color: #666;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -138,19 +208,27 @@
                     {% csrf_token %}
                     <div class="form-group">
                         <label>Select Your Vehicle:</label>
-                        <select name="vehicle" required>
-                            <option value="">-- Choose a vehicle --</option>
-                            {% for v in vehicles %}
-                            <option value="{{ v.id }}">{{ v.vehicle_number }} ({{ v.vehicle_type }})</option>
-                            {% endfor %}
-                        </select>
+                        {% for v in vehicles %}
+                        <div class="vehicle-option">
+                            <input type="radio" name="vehicle" value="{{ v.id }}" id="vehicle_{{ v.id }}" required>
+                            {% if v.vehicle_image %}
+                                <img src="{{ v.vehicle_image.url }}" alt="{{ v.vehicle_number }}" class="vehicle-image">
+                            {% else %}
+                                <div class="vehicle-image-placeholder">No Image</div>
+                            {% endif %}
+                            <label for="vehicle_{{ v.id }}" class="vehicle-info">
+                                <strong>{{ v.vehicle_number }}</strong>
+                                <span>{{ v.vehicle_type }}</span>
+                            </label>
+                        </div>
+                        {% endfor %}
                     </div>
                     <button type="submit" class="btn">Book Slot</button>
                 </form>
 
                 <div class="vehicle-form">
                     <h3>Add New Vehicle</h3>
-                    <form method="POST" action="/add-vehicle/">
+                    <form method="POST" action="/add-vehicle/" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="form-group">
                             <label>Vehicle Number:</label>
@@ -164,6 +242,14 @@
                                 <option value="Bike">Bike</option>
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label>Vehicle Image (Optional):</label>
+                            <div class="file-input-wrapper">
+                                <label for="vehicle_image" class="file-input-label">Choose Image</label>
+                                <input type="file" name="vehicle_image" id="vehicle_image" accept="image/*" onchange="updateFileName(this)">
+                                <span class="file-name" id="file-name">No file chosen</span>
+                            </div>
+                        </div>
                         <button type="submit" class="btn btn-secondary">Add Vehicle</button>
                     </form>
                 </div>
@@ -171,7 +257,7 @@
                 <div class="message">
                     You don't have any vehicles registered. Please add a vehicle first.
                 </div>
-                <form method="POST" action="/add-vehicle/">
+                <form method="POST" action="/add-vehicle/" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="form-group">
                         <label>Vehicle Number:</label>
@@ -185,10 +271,27 @@
                             <option value="Bike">Bike</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label>Vehicle Image (Optional):</label>
+                        <div class="file-input-wrapper">
+                            <label for="vehicle_image_new" class="file-input-label">Choose Image</label>
+                            <input type="file" name="vehicle_image" id="vehicle_image_new" accept="image/*" onchange="updateFileName(this)">
+                            <span class="file-name" id="file-name-new">No file chosen</span>
+                        </div>
+                    </div>
                     <button type="submit" class="btn">Add Vehicle</button>
                 </form>
             {% endif %}
         </div>
     </div>
+    <script>
+        function updateFileName(input) {
+            const fileName = input.files[0] ? input.files[0].name : 'No file chosen';
+            const fileNameSpan = input.parentElement.querySelector('.file-name');
+            if (fileNameSpan) {
+                fileNameSpan.textContent = fileName;
+            }
+        }
+    </script>
 </body>
 </html>

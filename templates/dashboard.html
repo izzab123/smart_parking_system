@@ -110,6 +110,21 @@
             font-weight: bold;
             color: #333;
         }
+        .vehicle-thumbnail {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border: 1px solid #999;
+            margin-top: 8px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .slot-card.occupied .slot-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
     </style>
 </head>
 <body>
@@ -158,6 +173,16 @@
                 <span class="slot-status {% if not slot.is_available %}occupied{% endif %}">
                     {% if slot.is_available %}Available{% else %}Occupied{% endif %}
                 </span>
+                {% if not slot.is_available %}
+                    {% for occupied in occupied_slots %}
+                        {% if occupied.slot.id == slot.id %}
+                            {% if occupied.vehicle.vehicle_image %}
+                                <img src="{{ occupied.vehicle.vehicle_image.url }}" alt="{{ occupied.vehicle.vehicle_number }}" class="vehicle-thumbnail">
+                            {% endif %}
+                            <div class="slot-info">{{ occupied.vehicle.vehicle_number }}</div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
             </div>
             {% endfor %}
         </div>
