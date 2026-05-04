@@ -12,10 +12,23 @@ def dashboard(request):
     slots = ParkingSlot.objects.all()
     available_count = slots.filter(is_available=True).count()
     occupied_count = slots.filter(is_available=False).count()
+    
+    # Get active bookings with vehicle images for occupied slots
+    occupied_slots = []
+    for slot in slots.filter(is_available=False):
+        booking = Booking.objects.filter(slot=slot, status='Active').first()
+        if booking:
+            occupied_slots.append({
+                'slot': slot,
+                'booking': booking,
+                'vehicle': booking.vehicle
+            })
+    
     return render(request, 'dashboard.html', {
         'slots': slots,
         'available_count': available_count,
-        'occupied_count': occupied_count
+        'occupied_count': occupied_count,
+        'occupied_slots': occupied_slots
     })
 
 @login_required(login_url='/login/')
@@ -52,11 +65,13 @@ def add_vehicle(request):
     if request.method == 'POST':
         vehicle_number = request.POST.get('vehicle_number')
         vehicle_type = request.POST.get('vehicle_type')
+        vehicle_image = request.FILES.get('vehicle_image')
         
         Vehicle.objects.create(
             user=request.user,
             vehicle_number=vehicle_number,
-            vehicle_type=vehicle_type
+            vehicle_type=vehicle_type,
+            vehicle_image=vehicle_image
         )
         messages.success(request, 'Vehicle added successfully!')
     return redirect('book_slot')
