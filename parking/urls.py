@@ -17,6 +17,7 @@ urlpatterns = [
     path('admin-portal/', views.admin_dashboard, name='admin_dashboard'),
     path('admin-portal/slots/', views.manage_slots, name='manage_slots'),
     path('admin-portal/slots/add/', views.add_slot, name='add_slot'),
+    path('admin-portal/slots/edit/<int:slot_id>/', views.edit_slot, name='edit_slot'),
     path('admin-portal/slots/delete/<int:slot_id>/', views.delete_slot, name='delete_slot'),
     path('admin-portal/bookings/', views.all_bookings, name='all_bookings'),
     path('admin-portal/bookings/cancel/<int:booking_id>/', views.admin_cancel_booking, name='admin_cancel_booking'),

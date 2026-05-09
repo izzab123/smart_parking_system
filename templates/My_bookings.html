@@ -124,6 +124,7 @@
                             <th>Vehicle</th>
                             <th>Booking Time</th>
                             <th>Expiry Time</th>
+                            <th>Price</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -135,6 +136,7 @@
                             <td>{{ b.vehicle.vehicle_number }}</td>
                             <td>{{ b.booking_time|date:"Y-m-d H:i" }}</td>
                             <td>{{ b.expiry_time|date:"Y-m-d H:i" }}</td>
+                            <td><strong style="color: #4CAF50;">BDT {{ b.total_price }}</strong></td>
                             <td class="{% if b.status == 'Active' %}status-active{% else %}status-cancelled{% endif %}">
                                 {{ b.status }}
                             </td>

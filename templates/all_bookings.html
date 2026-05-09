@@ -115,6 +115,7 @@
                         <th>Slot</th>
                         <th>Booking Time</th>
                         <th>Expiry Time</th>
+                        <th>Price</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -128,6 +129,7 @@
                         <td>{{ booking.slot.slot_number }}</td>
                         <td>{{ booking.booking_time|date:"Y-m-d H:i" }}</td>
                         <td>{{ booking.expiry_time|date:"Y-m-d H:i" }}</td>
+                        <td><strong style="color: #4CAF50;">BD. {{ booking.total_price }}</strong></td>
                         <td class="{% if booking.status == 'Active' %}status-active{% else %}status-cancelled{% endif %}">
                             {{ booking.status }}
                         </td>

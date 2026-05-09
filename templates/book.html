@@ -203,6 +203,21 @@
                 {% endfor %}
             {% endif %}
 
+            {% if slots %}
+                <div style="background: #f0f8ff; padding: 20px; margin-bottom: 30px; border: 1px solid #4CAF50;">
+                    <h3 style="color: #333; margin-bottom: 15px;">Available Parking Slots</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        {% for slot in slots %}
+                        <div style="background: #fff; padding: 15px; border: 2px solid #4CAF50; border-radius: 5px; text-align: center;">
+                            <strong style="font-size: 18px; color: #333;">{{ slot.slot_number }}</strong>
+                            <p style="color: #666; margin: 10px 0;">Rate: <strong style="color: #4CAF50; font-size: 16px;">BDT {{ slot.price_per_hour }}/hour</strong></p>
+                            <p style="color: #999; font-size: 12px;">30 min: BDT {{ slot.price_per_hour|floatformat:2 }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
             {% if vehicles %}
                 <form method="POST">
                     {% csrf_token %}

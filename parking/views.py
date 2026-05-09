@@ -7,6 +7,8 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.db.models import Sum
+from decimal import Decimal
 
 def dashboard(request):
     slots = ParkingSlot.objects.all()
@@ -46,19 +48,25 @@ def book_slot(request):
             slot.is_available = False
             slot.save()
 
+            # Calculate price for 30 minutes (0.5 hours)
+            booking_duration_hours = Decimal('0.5')
+            total_price = slot.price_per_hour * booking_duration_hours
+
             booking = Booking.objects.create(
                 user=request.user,
                 vehicle=vehicle,
                 slot=slot,
-                expiry_time=timezone.now() + timedelta(minutes=30)
+                expiry_time=timezone.now() + timedelta(minutes=30),
+                total_price=total_price
             )
-            messages.success(request, f'Slot {slot.slot_number} booked successfully!')
+            messages.success(request, f'Slot {slot.slot_number} booked successfully! Price: BDT {total_price}')
             return redirect('my_bookings')
         else:
             messages.error(request, 'No available slots at the moment')
 
     vehicles = Vehicle.objects.filter(user=request.user)
-    return render(request, 'book.html', {'vehicles': vehicles})
+    slots = ParkingSlot.objects.filter(is_available=True)
+    return render(request, 'book.html', {'vehicles': vehicles, 'slots': slots})
 
 @login_required(login_url='/login/')
 def add_vehicle(request):
@@ -150,6 +158,10 @@ def admin_dashboard(request):
     active_bookings = Booking.objects.filter(status='Active').count()
     recent_bookings = Booking.objects.all().order_by('-booking_time')[:10]
     
+    # Calculate total revenue
+    total_revenue = Booking.objects.filter(status='Active').aggregate(Sum('total_price'))['total_price__sum'] or 0
+    completed_revenue = Booking.objects.filter(status='Cancelled').aggregate(Sum('total_price'))['total_price__sum'] or 0
+    
     return render(request, 'admin_dashboard.html', {
         'total_slots': total_slots,
         'available_slots': available_slots,
@@ -157,6 +169,8 @@ def admin_dashboard(request):
         'total_bookings': total_bookings,
         'active_bookings': active_bookings,
         'recent_bookings': recent_bookings,
+        'total_revenue': total_revenue,
+        'completed_revenue': completed_revenue,
     })
 
 @staff_member_required
@@ -168,8 +182,9 @@ def manage_slots(request):
 def add_slot(request):
     if request.method == 'POST':
         slot_number = request.POST.get('slot_number')
-        ParkingSlot.objects.create(slot_number=slot_number)
-        messages.success(request, f'Slot {slot_number} added successfully!')
+        price_per_hour = request.POST.get('price_per_hour', 50.00)
+        ParkingSlot.objects.create(slot_number=slot_number, price_per_hour=price_per_hour)
+        messages.success(request, f'Slot {slot_number} added successfully with price BDT {price_per_hour}/hour!')
     return redirect('manage_slots')
 
 @staff_member_required
@@ -179,6 +194,18 @@ def delete_slot(request, slot_id):
         slot.delete()
         messages.success(request, 'Slot deleted successfully!')
     return redirect('manage_slots')
+
+@staff_member_required
+def edit_slot(request, slot_id):
+    slot = ParkingSlot.objects.get(id=slot_id)
+    if request.method == 'POST':
+        slot.slot_number = request.POST.get('slot_number', slot.slot_number)
+        slot.price_per_hour = request.POST.get('price_per_hour', slot.price_per_hour)
+        slot.save()
+        messages.success(request, f'Slot {slot.slot_number} updated successfully!')
+        return redirect('manage_slots')
+    
+    return render(request, 'edit_slot.html', {'slot': slot})
 
 @staff_member_required
 def all_bookings(request):

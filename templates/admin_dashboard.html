@@ -168,6 +168,10 @@
                 <div class="stat-label">Active Bookings</div>
                 <div class="stat-value">{{ active_bookings }}</div>
             </div>
+            <div class="stat-card" style="background: #f0f8ff; border: 2px solid #4CAF50;">
+                <div class="stat-label">Active Revenue</div>
+                <div class="stat-value" style="color: #4CAF50;">BD. {{ total_revenue }}</div>
+            </div>
         </div>
 
         <div class="section">
@@ -179,6 +183,7 @@
                         <th>Vehicle</th>
                         <th>Slot</th>
                         <th>Booking Time</th>
+                        <th>Price</th>
                         <th>Status</th>
                     </tr>
                 </thead>
@@ -189,6 +194,7 @@
                         <td>{{ booking.vehicle.vehicle_number }}</td>
                         <td>{{ booking.slot.slot_number }}</td>
                         <td>{{ booking.booking_time|date:"Y-m-d H:i" }}</td>
+                        <td><strong style="color: #4CAF50;">BD. {{ booking.total_price }}</strong></td>
                         <td class="{% if booking.status == 'Active' %}status-active{% else %}status-cancelled{% endif %}">
                             {{ booking.status }}
                         </td>
