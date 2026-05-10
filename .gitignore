@@ -5,8 +5,6 @@
 __pycache__/
 *.pyc
 
-# Local DB (recommended not to commit)
-db.sqlite3
 
 # IDE
 .idea/
