@@ -125,6 +125,27 @@
             color: #666;
             margin-top: 8px;
         }
+        .slot-card.available {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .slot-card.available:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transform: translateY(-2px);
+        }
+        .slot-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .slot-status.available-btn {
+            background: #4CAF50;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .slot-status.available-btn:hover {
+            background: #45a049;
+        }
     </style>
 </head>
 <body>
@@ -169,12 +190,18 @@
         <h2 style="margin-bottom: 15px; color: #333;">All Parking Slots</h2>
         <div class="slots-grid">
             {% for slot in slots %}
-            <div class="slot-card {% if slot.is_available %}available{% else %}occupied{% endif %}">
-                <div class="slot-number">{{ slot.slot_number }}</div>
-                <span class="slot-status {% if not slot.is_available %}occupied{% endif %}">
-                    {% if slot.is_available %}Available{% else %}Occupied{% endif %}
-                </span>
-                {% if not slot.is_available %}
+                {% if slot.is_available %}
+                <a href="/book/" class="slot-link">
+                    <div class="slot-card available">
+                        <div class="slot-number">{{ slot.slot_number }}</div>
+                        <span class="slot-status available-btn">Book Now</span>
+                        <p style="font-size: 12px; color: #666; margin-top: 8px;">Rate: BDT {{ slot.price_per_hour }}/hr</p>
+                    </div>
+                </a>
+                {% else %}
+                <div class="slot-card occupied">
+                    <div class="slot-number">{{ slot.slot_number }}</div>
+                    <span class="slot-status occupied">Occupied</span>
                     {% for occupied in occupied_slots %}
                         {% if occupied.slot.id == slot.id %}
                             {% if occupied.vehicle.vehicle_image %}
@@ -183,8 +210,8 @@
                             <div class="slot-info">{{ occupied.vehicle.vehicle_number }}</div>
                         {% endif %}
                     {% endfor %}
+                </div>
                 {% endif %}
-            </div>
             {% endfor %}
         </div>
     </div>
