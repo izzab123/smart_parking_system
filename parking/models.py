@@ -14,6 +14,7 @@ class Vehicle(models.Model):
 class ParkingSlot(models.Model):
     slot_number = models.CharField(max_length=10)
     is_available = models.BooleanField(default=True)
+    price_per_hour = models.DecimalField(max_digits=10, decimal_places=2, default=50.00)
 
     def __str__(self):
         return self.slot_number
@@ -25,6 +26,7 @@ class Booking(models.Model):
     booking_time = models.DateTimeField(default=timezone.now)
     expiry_time = models.DateTimeField()
     status = models.CharField(max_length=20, default='Active')
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     def __str__(self):
         return f"{self.user.username} - {self.slot.slot_number}"

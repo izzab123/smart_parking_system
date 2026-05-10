@@ -134,6 +134,10 @@
                     <label>Slot Number:</label>
                     <input type="text" name="slot_number" required>
                 </div>
+                <div class="form-group">
+                    <label>Price Per Hour (BDT):</label>
+                    <input type="number" name="price_per_hour" step="0.01" value="50.00" required>
+                </div>
                 <button type="submit" class="btn">Add Slot</button>
             </form>
         </div>
@@ -144,6 +148,7 @@
                 <thead>
                     <tr>
                         <th>Slot Number</th>
+                        <th>Price Per Hour</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -152,10 +157,12 @@
                     {% for slot in slots %}
                     <tr>
                         <td>{{ slot.slot_number }}</td>
+                        <td><strong>BDT {{ slot.price_per_hour }}</strong></td>
                         <td class="{% if slot.is_available %}status-available{% else %}status-occupied{% endif %}">
                             {% if slot.is_available %}Available{% else %}Occupied{% endif %}
                         </td>
                         <td>
+                            <a href="/admin-portal/slots/edit/{{ slot.id }}/" class="btn" style="text-decoration: none; display: inline-block;">Edit</a>
                             <form method="POST" action="/admin-portal/slots/delete/{{ slot.id }}/" style="display: inline;">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this slot?')">Delete</button>
