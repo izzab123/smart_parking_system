@@ -90,6 +90,7 @@ def cancel_booking(request, booking_id):
         booking.slot.save()
         booking.save()
         messages.success(request, 'Booking cancelled successfully!')
+        return redirect('submit_review', booking_id=booking_id)
     return redirect('my_bookings')
 
 def user_login(request):

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Reviews - Parking System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .header {
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+        .nav {
+            margin-top: 15px;
+        }
+        .nav a {
+            display: inline-block;
+            padding: 8px 16px;
+            margin-right: 10px;
+            background: #333;
+            color: #fff;
+            text-decoration: none;
+            border: 1px solid #333;
+        }
+        .nav a:hover {
+            background: #555;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .review-card {
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .review-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .review-user {
+            font-weight: bold;
+        }
+        .review-rating {
+            color: #ffcc00;
+            font-size: 18px;
+        }
+        .review-date {
+            color: #666;
+            font-size: 14px;
+        }
+        .review-details {
+            margin-bottom: 10px;
+        }
+        .review-comment {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .no-reviews {
+            text-align: center;
+            padding: 50px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Parking System</h1>
+        <div class="nav">
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'book_slot' %}">Book Slot</a>
+            <a href="{% url 'my_bookings' %}">My Bookings</a>
+            <a href="{% url 'all_reviews' %}">Reviews</a>
+            {% if user.is_staff %}
+            <a href="{% url 'admin_dashboard' %}">Admin Portal</a>
+            {% endif %}
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>All Reviews</h2>
+        
+        {% if reviews %}
+            {% for review in reviews %}
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-user">{{ review.user.username }}</div>
+                    <div class="review-rating">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="review-details">
+                    <strong>Vehicle:</strong> {{ review.booking.vehicle.vehicle_number }} ({{ review.booking.vehicle.vehicle_type }})<br>
+                    <strong>Slot:</strong> {{ review.booking.slot.slot_number }}<br>
+                    <strong>Booking Date:</strong> {{ review.booking.booking_time|date:"M d, Y H:i" }}
+                </div>
+                {% if review.comment %}
+                <div class="review-comment">
+                    {{ review.comment }}
+                </div>
+                {% endif %}
+                <div class="review-date">
+                    Reviewed on {{ review.created_at|date:"M d, Y H:i" }}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-reviews">
+                <h3>No reviews yet</h3>
+                <p>Be the first to leave a review after canceling a booking!</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
