@@ -26,6 +26,11 @@ def dashboard(request):
                 'vehicle': booking.vehicle
             })
     
+    # Fixed pricing: Bike=25 BDT, Car=50 BDT per hour
+    for slot in slots:
+        slot.bike_charge = Decimal('25.00')
+        slot.car_charge = Decimal('50.00')
+    
     return render(request, 'dashboard.html', {
         'slots': slots,
         'available_count': available_count,
@@ -48,24 +53,32 @@ def book_slot(request):
             slot.is_available = False
             slot.save()
 
-            # Calculate price for 30 minutes (0.5 hours)
-            booking_duration_hours = Decimal('0.5')
-            total_price = slot.price_per_hour * booking_duration_hours
+            # Fixed pricing based on vehicle type for 1 hour
+            if vehicle.vehicle_type.lower() == 'bike':
+                total_price = Decimal('25.00')
+            else:  # car or other
+                total_price = Decimal('50.00')
 
             booking = Booking.objects.create(
                 user=request.user,
                 vehicle=vehicle,
                 slot=slot,
-                expiry_time=timezone.now() + timedelta(minutes=30),
+                expiry_time=timezone.now() + timedelta(hours=1),
                 total_price=total_price
             )
-            messages.success(request, f'Slot {slot.slot_number} booked successfully! Price: BDT {total_price}')
+            messages.success(request, f'Slot {slot.slot_number} booked successfully! Price: BDT {total_price} (1 hour)')
             return redirect('my_bookings')
         else:
             messages.error(request, 'No available slots at the moment')
 
     vehicles = Vehicle.objects.filter(user=request.user)
     slots = ParkingSlot.objects.filter(is_available=True)
+    
+    # Fixed pricing: Bike=25 BDT, Car=50 BDT per hour
+    for slot in slots:
+        slot.bike_charge = Decimal('25.00')
+        slot.car_charge = Decimal('50.00')
+    
     return render(request, 'book.html', {'vehicles': vehicles, 'slots': slots})
 
 @login_required(login_url='/login/')
